@@ -62,3 +62,38 @@ DB[:students].insert(
   [:first_name, :middle_name, :last_name, :course, :gender, :city_id],
   ['Zhen','Chi','Bao','2','m','4']
 )
+
+students = DB[:students]
+cities = DB[:cities]
+
+puts "Сколько всего студентов приехало к нам учиться?"
+puts "#{students.count(:student_id)}\n\n"
+
+puts "Сколько студенток-девочек приехало учиться и на каких они курсах?"
+students.where(:gender => 'f').each do |girl|
+  puts "#{girl[:first_name]} #{girl[:last_name]}, #{girl[:course]} course\n"
+end
+puts "\nВсего девочек: #{students.where(:gender => 'f').count()}\n\n"
+
+puts "Сколько студентов приехало учиться из Германии?"
+puts "#{students.where(:city_id => (cities.where(:country => 'Germany').select(:id))).count()}\n\n"
+
+puts "Сколько студентов младше четвертого курса у нас обучаются (не включая сам 4 курс)?"
+puts "#{students.where('course < 4').count()}\n\n"
+
+puts "Необходимо перевести Анну со 2 на 3 курс, а Питера за неуспеваемость на второй курс"
+students.where(:first_name=>'Anna').update(:course => '3')
+students.where(:first_name=>'Anna').each do |anna|
+  puts "#{anna[:first_name]} #{anna[:last_name]} переведена на #{anna[:course]} курс"
+end
+students.where(:first_name=>'Peter').update(:course => '2')
+students.where(:first_name=>'Peter').each do |peter|
+  puts "#{peter[:first_name]} #{peter[:last_name]} переведен на #{peter[:course]} курс\n\n"
+end
+
+puts "Необходимо удалить записи обо всех студентках-девушках из Германии, т.к. им не дали разрешение на обучение у нас"
+puts "Deleted #{students.where(:gender => 'f', :city_id => cities.where(:country => "Germany").select(:id)).delete()} records\n"
+puts "\nFinal list:"
+students.each do |student|
+  puts "#{student[:student_id]} #{student[:first_name]} #{student[:last_name]}, #{student[:course]} course, #{cities.where(:id => student[:city_id]).first()[:country]}"
+end
