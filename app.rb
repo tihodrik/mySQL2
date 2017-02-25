@@ -91,9 +91,23 @@ students.where(:first_name=>'Peter').each do |peter|
   puts "#{peter[:first_name]} #{peter[:last_name]} переведен на #{peter[:course]} курс\n\n"
 end
 
-puts "Необходимо удалить записи обо всех студентках-девушках из Германии, т.к. им не дали разрешение на обучение у нас"
+puts "Необходимо удалить записи обо всех студентках-девушках из Германии,
+т.к. им не дали разрешение на обучение у нас"
 puts "Deleted #{students.where(:gender => 'f', :city_id => cities.where(:country => "Germany").select(:id)).delete()} records\n"
 puts "\nFinal list:"
 students.each do |student|
   puts "#{student[:student_id]} #{student[:first_name]} #{student[:last_name]}, #{student[:course]} course, #{cities.where(:id => student[:city_id]).first()[:country]}"
+end
+
+puts "\n\nВсем студентам необходимо добавить данные об отметке об успешном освоении нашего курса,
+по-умолчанию у всех курс не освоен, кроме студентов 4-го курса из Германии\n\n"
+
+DB.alter_table :students do
+  add_column :finished, TrueClass, :default=>false
+end
+
+students.where(:course => '4', :city_id => cities.where(:country => 'Germany').select(:id)).update(:finished => true)
+
+students.each do |student|
+  puts "#{student[:finished]} #{student[:first_name]} #{student[:last_name]}, #{student[:course]} course, #{cities.where(:id => student[:city_id]).first()[:country]}"
 end
